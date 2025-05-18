@@ -5,6 +5,7 @@ import Loop from "./Utils/Loop.js";
 import World from "./World/World.js";
 import Resize from "./Utils/Resize.js";
 import AssetLoader from "./Utils/AssetLoader.js";
+import Preloader from "./UI/Preloader.js";
 
 let inst = null;
 export default class App {
@@ -18,6 +19,7 @@ export default class App {
 
         //加载
         this.assetLoader = new AssetLoader();
+        this.preloader = new Preloader();
 
         this.world = new World();
 

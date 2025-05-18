@@ -25,11 +25,11 @@ const assetsToLoad = [
 const assetStore = createStore((set) => {
     return {
         assetsToLoad,
-        loadedAsset: [],
+        loadedAssets: [],
         addLoadedAsset: (asset, id) => set((state) =>
         ({
-            loadedAsset: {
-                ...state.loadedAsset,
+            loadedAssets: {
+                ...state.loadedAssets,
                 [id]: asset
             }
         })

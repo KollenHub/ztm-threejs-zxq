@@ -11,7 +11,7 @@ export default class Preloader {
 
         this.assetStore.subscribe((state) =>{
 
-            this.numberOfLoadedAssets = Object.keys(state.loadedAsset).length
+            this.numberOfLoadedAssets = Object.keys(state.loadedAssets).length
             this.numberOfAssetsToLoad = state.assetsToLoad.length
             this.progress = this.numberOfLoadedAssets / this.numberOfAssetsToLoad
             this.progress = Math.trunc(this.progress * 100)
