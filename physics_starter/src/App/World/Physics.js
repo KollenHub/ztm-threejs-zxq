@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import App from '../App.js'
-import { color } from 'three/tsl'
+import { appStateStore } from '../Utils/Store.js'
 
 export default class Physics {
     constructor() {
@@ -16,6 +16,8 @@ export default class Physics {
             this.world = new RAPIER.World(gravity);
             this.rapier = RAPIER;
             this.rapierLoaded = true;
+            appStateStore.setState({ pyhicsReady: true })
+
         });
     }
 
@@ -27,12 +29,16 @@ export default class Physics {
     */
     add(mesh, type, colliderTypeName) {
         let rigidBodyType;
-        if (type == "dynamic")
+        if (type === "dynamic")
+        {
             rigidBodyType = this.rapier.RigidBodyDesc.dynamic();
+        }
         else
             rigidBodyType = this.rapier.RigidBodyDesc.fixed();
-        
-        const rigidBody=this.world.createRigidBody(rigidBodyType);
+
+        const rigidBody = this.world.createRigidBody(rigidBodyType);
+        rigidBody.setTranslation(mesh.position);
+        rigidBody.setRotation(mesh.quaternion);
 
         //设置碰撞盒子
         let colliderType;
@@ -41,8 +47,8 @@ export default class Physics {
                 const size = this.compouteCuboidDimensions(mesh)
                 colliderType = this.rapier.ColliderDesc.cuboid(
                     size.x / 2,
-                    size.y/2,
-                    size.z/2
+                    size.y / 2,
+                    size.z / 2
                 );
                 break;
             case "ball":
@@ -53,6 +59,11 @@ export default class Physics {
                     new Float32Array([0, 0, 0, 1])
                 )
         }
+
+        //创建碰撞器
+        this.world.createCollider(colliderType, rigidBody);
+
+        this.meshMap.set(mesh, rigidBody);
     }
 
     /*
@@ -60,8 +71,7 @@ export default class Physics {
      * @param {THREE.Mesh} mesh
      * @return {THREE.Vector3}
      */
-    compouteCuboidDimensions(mesh)
-    {
+    compouteCuboidDimensions(mesh) {
         const box = new THREE.Box3().setFromObject(mesh)
         const size = new THREE.Vector3()
         box.getSize(size)
@@ -73,10 +83,21 @@ export default class Physics {
 
 
     loop() {
-
         if (!this.rapierLoaded) return
-
         //更新物理世界
         this.world.step()
+
+        this.meshMap.forEach((rigidBody, mesh) => {
+             
+            //获取刚体的位置和旋转
+            const position = rigidBody.translation()
+            const rotation = rigidBody.rotation()
+
+            //将刚体的位置和旋转应用到mesh
+            mesh.position.set(position.x, position.y, position.z)
+            mesh.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w)
+
+        })
+
     }
 }
