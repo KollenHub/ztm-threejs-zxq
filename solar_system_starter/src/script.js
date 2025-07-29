@@ -106,7 +106,7 @@ const planets = [
 
 const CreatePlanet = (planet) => {
   const planetMesh = new THREE.Mesh(sphereGeometry, planet.material)
-  planetMesh.scale.setScalar(planet.radius*1.5)
+  planetMesh.scale.setScalar(planet.radius * 1.5)
   planetMesh.position.x = planet.distance
   scene.add(planetMesh)
   return planetMesh;
@@ -121,7 +121,7 @@ const CreateMoon = (moon) => {
 
 const planetArray = planets.map((planet) => {
 
-  console.log(planet);
+  // console.log(planet);
   const planetMesh = CreatePlanet(planet);
   planet.moons.forEach((moon) => {
     const moonMesh = CreateMoon(moon);
@@ -130,6 +130,93 @@ const planetArray = planets.map((planet) => {
   return planetMesh
 
 });
+
+
+
+//创建粒子行星带
+const parameter = {
+  count: 1000,
+  radius: 24,
+  size: 0.01,
+  width: 10
+
+}
+
+
+let glaxyMeshGeometry = null;
+let glaxyMeshMaterial = null;
+let glaxyMeshPoints = null;
+
+const GenerateGlaxy = () => {
+
+  if (glaxyMeshPoints) {
+    glaxyMeshGeometry.dispose();
+    glaxyMeshMaterial.dispose();
+    scene.remove(glaxyMeshPoints)
+  }
+  const pointArray = new Float32Array(parameter.count * 3)
+
+  for (let i = 0; i < parameter.count; i++) {
+
+    const i3 = i * 3;
+    const angle = Math.random() * Math.PI * 2
+    pointArray[i3] = Math.sin(angle) * parameter.radius + (Math.random() - 0.5) * parameter.width
+    pointArray[i3 + 1] = Math.random()*parameter.width;
+    pointArray[i3 + 2] = Math.cos(angle) * parameter.radius + (Math.random() - 0.5) * parameter.width
+
+  }
+
+  glaxyMeshGeometry = new THREE.BufferGeometry();
+
+  glaxyMeshGeometry.setAttribute('position', new THREE.BufferAttribute(pointArray, 3))
+
+
+  glaxyMeshMaterial = new THREE.PointsMaterial({
+    size: parameter.size,//粒子大小
+    color: 0xffffff,//粒子颜色
+    sizeAttenuation: true,//随着远近变大变小
+    depthWrite: false,//深度优化
+    blending: THREE.AdditiveBlending,//blending透明度叠加
+
+  })
+
+  glaxyMeshPoints = new THREE.Points(glaxyMeshGeometry, glaxyMeshMaterial)
+  scene.add(glaxyMeshPoints)
+}
+
+
+GenerateGlaxy()
+
+
+pane.addBinding(parameter, 'count', {
+  min: 100,
+  max: 10000,
+  step: 100,
+  label: '粒子数量'
+}).on('change', GenerateGlaxy)
+pane.addBinding(parameter, 'radius',
+  {
+    min: 1,
+    max: 50,
+    step: 1,
+    label: '半径'
+  }).on('change', GenerateGlaxy)
+pane.addBinding(parameter, 'size', {
+  min: 0.001,
+  max: 0.1,
+  step: 0.001,
+  label: '大小'
+}).on('change', GenerateGlaxy)
+
+pane.addBinding(parameter, 'width', {
+  min: 1,
+  max: 20,
+  step: 1,
+  label: '宽度'
+}).on('change', GenerateGlaxy)
+
+console.log(pane)
+
 
 //添加灯光(MeshStandardMaterial需要灯光)
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
@@ -152,6 +239,7 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.z = 100;
 camera.position.y = 5;
+
 
 // initialize the renderer
 const canvas = document.querySelector("canvas.threejs");
@@ -177,12 +265,12 @@ const renderloop = () => {
 
   planetArray.forEach((planet, index) => {
     planet.rotation.y += planets[index].speed;
-    planet.position.x = Math.sin(planet.rotation.y)*planets[index].distance;
-    planet.position.z = Math.cos(planet.rotation.y)*planets[index].distance;
+    planet.position.x = Math.sin(planet.rotation.y) * planets[index].distance;
+    planet.position.z = Math.cos(planet.rotation.y) * planets[index].distance;
     planet.children.forEach((moon, moonIndex) => {
       moon.rotation.y += planets[index].moons[moonIndex].speed;
-      moon.position.x = Math.sin(moon.rotation.y)*planets[index].moons[moonIndex].distance;
-      moon.position.z = Math.cos(moon.rotation.y)*planets[index].moons[moonIndex].distance;
+      moon.position.x = Math.sin(moon.rotation.y) * planets[index].moons[moonIndex].distance;
+      moon.position.z = Math.cos(moon.rotation.y) * planets[index].moons[moonIndex].distance;
     })
 
   })
